@@ -25,7 +25,6 @@ public class Player
         yStartPos = 500;
 
         yPos = yStartPos;
-
     }
 
     //Getter and Setters

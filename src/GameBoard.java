@@ -2,10 +2,7 @@
  * Created by William Madgwick on 7/19/2017.
  * The game board
  */
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
@@ -24,6 +21,7 @@ public class GameBoard extends JPanel implements ActionListener
 
     //The player object
     private Player playerBlock;
+    Obstacle obstacle;
 
     private static final String JUMP = "JUMP";
 
@@ -36,6 +34,7 @@ public class GameBoard extends JPanel implements ActionListener
         getActionMap().put(JUMP, new JumpAction());
 
         playerBlock = new Player();
+        obstacle = new Obstacle();
         initBoard();
     }
 
@@ -56,16 +55,27 @@ public class GameBoard extends JPanel implements ActionListener
     public void paintComponent(Graphics graphics)
     {
         super.paintComponent(graphics);
+        Graphics2D g = (Graphics2D) graphics;
+
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
         //Draw the rectangle (Our player)
-        graphics.setColor(Color.WHITE);
-        graphics.fillRect(playerBlock.getXStartPos(), playerBlock.getYPos(), playerBlock.getWIDTH(), playerBlock.getHEIGHT());
+        g.setColor(Color.WHITE);
+        g.fillRect(playerBlock.getXStartPos(), playerBlock.getYPos(), playerBlock.getWIDTH(), playerBlock.getHEIGHT());
+
+        Shape shape = new Rectangle(obstacle.getXPos(), obstacle.getYPos(), obstacle.getSize(), obstacle.getSize());
+        g.draw(shape);
+
         Toolkit.getDefaultToolkit().sync();
     }
 
     @Override
     public void actionPerformed(ActionEvent e)
     {
+        //The code for the obstacles
+        moveObstacle();
+
         //Repaint the panel to show updates to our block
         repaint();
     }
@@ -104,6 +114,21 @@ public class GameBoard extends JPanel implements ActionListener
 
             playerBlock.setYPos(yPos);
         }
+    }
+
+    private void moveObstacle()
+    {
+        int xPos = obstacle.getXPos();
+        int xVel = obstacle.getXVelocity();
+
+        xPos += xVel;
+
+        if(xPos == 0)
+        {
+            obstacle.setXVelocity(0);
+        }
+
+        obstacle.setXPos(xPos);
     }
 
 }
