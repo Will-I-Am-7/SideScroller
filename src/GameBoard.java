@@ -8,8 +8,6 @@ import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import javax.swing.*;
 
 public class GameBoard extends JPanel implements ActionListener
@@ -21,7 +19,8 @@ public class GameBoard extends JPanel implements ActionListener
     //The timer delay
     private final int DELAY = 10;
 
-    private Timer timer;
+    private Timer gameTimer;
+    private Timer jumpTimer;
 
     //The player object
     private Player playerBlock;
@@ -32,6 +31,8 @@ public class GameBoard extends JPanel implements ActionListener
     {
         //Set up key bindings
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("UP"), JUMP);
+        getActionMap().put(JUMP, new JumpAction());
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"), JUMP);
         getActionMap().put(JUMP, new JumpAction());
 
         playerBlock = new Player();
@@ -45,7 +46,10 @@ public class GameBoard extends JPanel implements ActionListener
         setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
         setDoubleBuffered(true);
 
-        timer = new Timer(DELAY, this);
+        gameTimer = new Timer(DELAY, this);
+        gameTimer.start();
+
+        jumpTimer = new Timer(DELAY, new JumpTimerHandler());
     }
 
     @Override
@@ -62,25 +66,6 @@ public class GameBoard extends JPanel implements ActionListener
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        int yPos = playerBlock.getYPos();
-        int yVelocity = playerBlock.getYVelocity();
-
-        yPos+=yVelocity;
-
-        //This will determine how high the player jumps
-        if(yPos == playerBlock.getJUMP_HEIGHT())
-        {
-            playerBlock.setYVelocity(4);
-        }
-
-        if(yPos == playerBlock.getYStartPos())
-        {
-            timer.stop();
-            playerBlock.setYVelocity(-4);
-        }
-
-        playerBlock.setYPos(yPos);
-
         //Repaint the panel to show updates to our block
         repaint();
     }
@@ -90,7 +75,34 @@ public class GameBoard extends JPanel implements ActionListener
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            timer.start();
+            jumpTimer.start();
+        }
+    }
+
+    //The timer handle for jumping
+    private class JumpTimerHandler implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            int yPos = playerBlock.getYPos();
+            int yVelocity = playerBlock.getYVelocity();
+
+            yPos+=yVelocity;
+
+            //This will determine how high the player jumps
+            if(yPos == playerBlock.getJUMP_HEIGHT())
+            {
+                playerBlock.setYVelocity(4);
+            }
+
+            if(yPos == playerBlock.getYStartPos())
+            {
+                jumpTimer.stop();
+                playerBlock.setYVelocity(-4);
+            }
+
+            playerBlock.setYPos(yPos);
         }
     }
 
