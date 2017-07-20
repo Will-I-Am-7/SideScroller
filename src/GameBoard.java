@@ -5,7 +5,10 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import java.util.Random;
 
 public class GameBoard extends JPanel implements ActionListener
 {
@@ -21,9 +24,11 @@ public class GameBoard extends JPanel implements ActionListener
 
     //The player object
     private Player playerBlock;
-    Obstacle obstacle;
+    private List<Obstacle> obstacles = new ArrayList<>();
 
     private static final String JUMP = "JUMP";
+
+    private int elapsedTime = 0;
 
     public GameBoard()
     {
@@ -34,7 +39,9 @@ public class GameBoard extends JPanel implements ActionListener
         getActionMap().put(JUMP, new JumpAction());
 
         playerBlock = new Player();
-        obstacle = new Obstacle();
+
+        //Generate the initial obstacle
+        obstacles.add(generateObstacle());
         initBoard();
     }
 
@@ -64,20 +71,31 @@ public class GameBoard extends JPanel implements ActionListener
         g.setColor(Color.WHITE);
         g.fillRect(playerBlock.getXStartPos(), playerBlock.getYPos(), playerBlock.getWIDTH(), playerBlock.getHEIGHT());
 
-        Shape shape = new Rectangle(obstacle.getXPos(), obstacle.getYPos(), obstacle.getSize(), obstacle.getSize());
-        g.draw(shape);
+        for (Obstacle ob : obstacles) {
+            g.draw(ob.getObstacleShape());
+        }
 
         Toolkit.getDefaultToolkit().sync();
     }
 
+    //Handler for the general board timer
     @Override
     public void actionPerformed(ActionEvent e)
     {
+        if(elapsedTime == 1000)
+        {
+            obstacles.add(generateObstacle());
+            elapsedTime = 0;
+        }
+
         //The code for the obstacles
         moveObstacle();
 
+
         //Repaint the panel to show updates to our block
         repaint();
+
+        elapsedTime+=DELAY;//Count the time elapsed
     }
 
     private class JumpAction extends AbstractAction
@@ -118,17 +136,30 @@ public class GameBoard extends JPanel implements ActionListener
 
     private void moveObstacle()
     {
-        int xPos = obstacle.getXPos();
-        int xVel = obstacle.getXVelocity();
-
-        xPos += xVel;
-
-        if(xPos == 0)
+        for (Obstacle ob : obstacles)
         {
-            obstacle.setXVelocity(0);
-        }
+            int xPos = ob.getXPos();
+            int xVel = ob.getXVelocity();
 
-        obstacle.setXPos(xPos);
+            xPos += xVel;
+
+            ob.setXPos(xPos);
+        }
+    }
+
+    private Obstacle generateObstacle()
+    {
+        Random random = new Random();
+
+        int xVel = (random.nextInt(4) + 1) * - 1;
+        int size = random.nextInt(25) + 25;
+
+        return new Obstacle(xVel, size, 500 + playerBlock.getHEIGHT() - size);
+    }
+
+    private boolean collisionPlayer(Obstacle obstacle)
+    {
+        return false;
     }
 
 }

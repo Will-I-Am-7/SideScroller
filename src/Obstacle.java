@@ -1,3 +1,5 @@
+import java.awt.*;
+
 /**
  * Created by William Madgwick on 7/20/2017.
  * The obstacles that the player will have to jump over
@@ -9,30 +11,34 @@ public class Obstacle
     private int yPos;
     private int xVelocity;
 
+    //How long in milliseconds before the obstacle starts to show
+    private int startTime;
+
     //This will be the width and height
     private int size;
 
     public Obstacle()
     {
-        xVelocity = -2;
+        xVelocity = -3;
         size = 50;
 
-        initStartingPos();
+        initStartingPos(500);
     }
 
-    public Obstacle(int xVelocity, int size)
+    public Obstacle(int xVelocity, int size, int startYPos)
     {
         this.xVelocity = xVelocity;
         this.size = size;
 
-        initStartingPos();
+        initStartingPos(startYPos);
 
     }
 
-    private void initStartingPos()
+    //Initialize the starting position for all of the obstacles
+    private void initStartingPos(int startYPos)
     {
-        xPos = GameBoard.BOARD_WIDTH - 50;
-        yPos = 500;
+        xPos = GameBoard.BOARD_WIDTH;
+        yPos = startYPos;
     }
 
     public int getXPos()
@@ -73,5 +79,11 @@ public class Obstacle
     public void setSize(int size)
     {
         this.size = size;
+    }
+
+    //Return a new shape to be drawn based on the size and positions
+    public Shape getObstacleShape()
+    {
+        return new Rectangle(xPos, yPos, size, size);
     }
 }
