@@ -17,7 +17,7 @@ public class GameBoard extends JPanel implements ActionListener
     public static final int BOARD_HEIGHT = 600;
 
     //The timer delay
-    private final int DELAY = 10;
+    private final int DELAY = 1;
 
     private Timer gameTimer;
     private Timer jumpTimer;
@@ -71,7 +71,8 @@ public class GameBoard extends JPanel implements ActionListener
         g.setColor(Color.WHITE);
         g.fillRect(playerBlock.getXStartPos(), playerBlock.getYPos(), playerBlock.getWIDTH(), playerBlock.getHEIGHT());
 
-        for (Obstacle ob : obstacles) {
+        for (Obstacle ob : obstacles)
+        {
             g.draw(ob.getObstacleShape());
         }
 
@@ -121,13 +122,13 @@ public class GameBoard extends JPanel implements ActionListener
             //This will determine how high the player jumps
             if(yPos == playerBlock.getJUMP_HEIGHT())
             {
-                playerBlock.setYVelocity(4);
+                playerBlock.setYVelocity(1);
             }
 
             if(yPos == playerBlock.getYStartPos())
             {
                 jumpTimer.stop();
-                playerBlock.setYVelocity(-4);
+                playerBlock.setYVelocity(-1);
             }
 
             playerBlock.setYPos(yPos);
@@ -136,14 +137,23 @@ public class GameBoard extends JPanel implements ActionListener
 
     private void moveObstacle()
     {
+        int count = 0;
         for (Obstacle ob : obstacles)
         {
+            if(collisionPlayer(ob, count))
+            {
+                System.out.println("Collision");
+                gameTimer.stop();
+            }
+
             int xPos = ob.getXPos();
             int xVel = ob.getXVelocity();
 
             xPos += xVel;
 
             ob.setXPos(xPos);
+
+            count++;
         }
     }
 
@@ -151,15 +161,33 @@ public class GameBoard extends JPanel implements ActionListener
     {
         Random random = new Random();
 
-        int xVel = (random.nextInt(4) + 1) * - 1;
-        int size = random.nextInt(25) + 25;
+        int xVel = (random.nextInt(2) + 1) * -1;
+        int size = (random.nextInt(5) + 1) * 10; //Meaning 5 different obstacle sizes
 
-        return new Obstacle(xVel, size, 500 + playerBlock.getHEIGHT() - size);
+        return new Obstacle(xVel, size, playerBlock.getYStartPos() + playerBlock.getHEIGHT() - size);
     }
 
-    private boolean collisionPlayer(Obstacle obstacle)
+    private boolean collisionPlayer(Obstacle obstacle, int obIndex)
     {
-        return false;
+        boolean yColl = false;
+        boolean xColl = false;
+
+        //We match the lower left corner from the player with the upper right hand corner from the obstacle
+        int playerLowerLeftCornerY = playerBlock.getYPos() + playerBlock.getHEIGHT();
+
+        int playerUpperRightX = playerBlock.getXStartPos() + playerBlock.getWIDTH();
+
+        if(playerUpperRightX == obstacle.getXPos()) //>
+        {
+            xColl = true;
+
+            if(playerLowerLeftCornerY > obstacle.getYPos()) //<
+            {
+                yColl = true;
+            }
+        }
+
+        return (xColl && yColl);
     }
 
 }

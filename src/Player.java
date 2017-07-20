@@ -16,12 +16,12 @@ public class Player
     private final int yStartPos;
 
     private int yPos;
-    private int yVelocity = -4; //The jump velocity
+    private int yVelocity = -1; //The jump velocity
 
     //Constructor
     public Player()
     {
-        xStartPos = 100;
+        xStartPos = 150;
         yStartPos = 500;
 
         yPos = yStartPos;
