@@ -17,7 +17,7 @@ public class GameBoard extends JPanel implements ActionListener
     public static final int BOARD_HEIGHT = 600;
 
     //The timer delay
-    private final int DELAY = 1;
+    private final int DELAY = 2;
 
     private Timer gameTimer;
     private Timer jumpTimer;
@@ -142,7 +142,6 @@ public class GameBoard extends JPanel implements ActionListener
         {
             if(collisionPlayer(ob, count))
             {
-                System.out.println("Collision");
                 gameTimer.stop();
             }
 
@@ -161,33 +160,37 @@ public class GameBoard extends JPanel implements ActionListener
     {
         Random random = new Random();
 
-        int xVel = (random.nextInt(2) + 1) * -1;
-        int size = (random.nextInt(5) + 1) * 10; //Meaning 5 different obstacle sizes
+        int xVel = (random.nextInt(1) + 1) * -1;
+        int size = (random.nextInt(6) + 1) * 10; //Meaning 5 different obstacle sizes
 
         return new Obstacle(xVel, size, playerBlock.getYStartPos() + playerBlock.getHEIGHT() - size);
     }
 
     private boolean collisionPlayer(Obstacle obstacle, int obIndex)
     {
-        boolean yColl = false;
-        boolean xColl = false;
+        boolean didCollide = false;
+        int slack = 2;
 
         //We match the lower left corner from the player with the upper right hand corner from the obstacle
         int playerLowerLeftCornerY = playerBlock.getYPos() + playerBlock.getHEIGHT();
 
         int playerUpperRightX = playerBlock.getXStartPos() + playerBlock.getWIDTH();
 
-        if(playerUpperRightX == obstacle.getXPos()) //>
-        {
-            xColl = true;
+        int xPlayerLeftObstacleRight_Dist = (obstacle.getXPos() + obstacle.getSize()) - playerBlock.getXStartPos();
+        int xPlayerRightObstacleLeft_Dist = obstacle.getXPos() - playerUpperRightX;
 
-            if(playerLowerLeftCornerY > obstacle.getYPos()) //<
+        if(xPlayerRightObstacleLeft_Dist < slack)
+        {
+            if(xPlayerLeftObstacleRight_Dist > slack)
             {
-                yColl = true;
+                if(playerLowerLeftCornerY > obstacle.getYPos())
+                {
+                    didCollide = true;
+                }
             }
         }
 
-        return (xColl && yColl);
+        return (didCollide);
     }
 
 }
