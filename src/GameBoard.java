@@ -17,7 +17,7 @@ public class GameBoard extends JPanel implements ActionListener
     public static final int BOARD_HEIGHT = 600;
 
     //The timer delay
-    private final int DELAY = 2;
+    private final int DELAY = 1;
 
     private Timer gameTimer;
     private Timer jumpTimer;
@@ -26,7 +26,9 @@ public class GameBoard extends JPanel implements ActionListener
     private Player playerBlock;
     private List<Obstacle> obstacles = new ArrayList<>();
 
+    //Identifiers for the different key bindings and actions
     private static final String JUMP = "JUMP";
+    private static final String EXIT = "EXIT";
 
     private int elapsedTime = 0;
 
@@ -37,6 +39,9 @@ public class GameBoard extends JPanel implements ActionListener
         getActionMap().put(JUMP, new JumpAction());
         getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"), JUMP);
         getActionMap().put(JUMP, new JumpAction());
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ESCAPE"), EXIT);
+        getActionMap().put(EXIT, new ExitAction());
+
 
         playerBlock = new Player();
 
@@ -108,6 +113,15 @@ public class GameBoard extends JPanel implements ActionListener
         }
     }
 
+    private class ExitAction extends AbstractAction
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            System.exit(0);
+        }
+    }
+
     //The timer handle for jumping
     private class JumpTimerHandler implements ActionListener
     {
@@ -140,9 +154,14 @@ public class GameBoard extends JPanel implements ActionListener
         int count = 0;
         for (Obstacle ob : obstacles)
         {
-            if(collisionPlayer(ob, count))
+            if(collisionPlayer(ob))
             {
                 gameTimer.stop();
+            }
+
+            if(isObstaclesOffScreen(ob, count))
+            {
+                System.out.print("Off screen");
             }
 
             int xPos = ob.getXPos();
@@ -166,7 +185,7 @@ public class GameBoard extends JPanel implements ActionListener
         return new Obstacle(xVel, size, playerBlock.getYStartPos() + playerBlock.getHEIGHT() - size);
     }
 
-    private boolean collisionPlayer(Obstacle obstacle, int obIndex)
+    private boolean collisionPlayer(Obstacle obstacle)
     {
         boolean didCollide = false;
         int slack = 2;
@@ -191,6 +210,20 @@ public class GameBoard extends JPanel implements ActionListener
         }
 
         return (didCollide);
+    }
+
+    //Checks if an object is off screen
+    private boolean isObstaclesOffScreen(Obstacle obstacle, int numObstacle)
+    {
+        if(obstacle.getXPos() < 0)
+        {
+            obstacles.remove(numObstacle);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
 }
