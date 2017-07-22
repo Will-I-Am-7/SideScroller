@@ -5,10 +5,10 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Queue;
 import javax.swing.*;
 import java.util.Random;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class GameBoard extends JPanel implements ActionListener
 {
@@ -24,7 +24,9 @@ public class GameBoard extends JPanel implements ActionListener
 
     //The player object
     private Player playerBlock;
-    private List<Obstacle> obstacles = new ArrayList<>();
+
+    //LinkedBlocking queue used to avoid problems with threads
+    private Queue<Obstacle> obstacles = new LinkedBlockingQueue<>();
 
     //Identifiers for the different key bindings and actions
     private static final String JUMP = "JUMP";
@@ -88,7 +90,7 @@ public class GameBoard extends JPanel implements ActionListener
     @Override
     public void actionPerformed(ActionEvent e)
     {
-        if(elapsedTime == 1000)
+        if(elapsedTime == 400)
         {
             obstacles.add(generateObstacle());
             elapsedTime = 0;
@@ -96,7 +98,6 @@ public class GameBoard extends JPanel implements ActionListener
 
         //The code for the obstacles
         moveObstacle();
-
 
         //Repaint the panel to show updates to our block
         repaint();
@@ -118,6 +119,7 @@ public class GameBoard extends JPanel implements ActionListener
         @Override
         public void actionPerformed(ActionEvent e)
         {
+            System.out.println("Num objects on screen: " + obstacles.size());
             System.exit(0);
         }
     }
@@ -151,7 +153,6 @@ public class GameBoard extends JPanel implements ActionListener
 
     private void moveObstacle()
     {
-        int count = 0;
         for (Obstacle ob : obstacles)
         {
             if(collisionPlayer(ob))
@@ -159,10 +160,7 @@ public class GameBoard extends JPanel implements ActionListener
                 gameTimer.stop();
             }
 
-            if(isObstaclesOffScreen(ob, count))
-            {
-                System.out.print("Off screen");
-            }
+            isObstaclesOffScreen(ob);
 
             int xPos = ob.getXPos();
             int xVel = ob.getXVelocity();
@@ -170,8 +168,6 @@ public class GameBoard extends JPanel implements ActionListener
             xPos += xVel;
 
             ob.setXPos(xPos);
-
-            count++;
         }
     }
 
@@ -213,11 +209,13 @@ public class GameBoard extends JPanel implements ActionListener
     }
 
     //Checks if an object is off screen
-    private boolean isObstaclesOffScreen(Obstacle obstacle, int numObstacle)
+    //Because a Queue is used, by implication, the size of the queue will always be equal to the number of obstacles on the screen at any given time
+    //Objects will be removed from the queue if they are off screen. This should enhance performance on longer games.
+    private boolean isObstaclesOffScreen(Obstacle obstacle)
     {
         if(obstacle.getXPos() < 0)
         {
-            obstacles.remove(numObstacle);
+            obstacles.poll();
             return true;
         }
         else
